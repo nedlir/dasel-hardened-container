@@ -1,0 +1,41 @@
+package:
+  name: dasel
+  version: 3.3.1
+  epoch: 0
+  description: "Query and modify data structures using selector strings"
+  copyright:
+    - license: MIT
+
+environment:
+  contents:
+    packages:
+      - busybox
+      - ca-certificates-bundle
+      - build-base
+      - go
+
+pipeline:
+  - uses: fetch
+    with:
+      uri: https://github.com/TomWright/dasel/archive/refs/tags/v${{package.version}}.tar.gz
+      expected-sha256: 0d83ee2235b2698ae84402cc03f0e3880a7b8e132408d5b45d02d544da894abc
+
+  - uses: patch
+    with:
+      patches:
+        - CVE-2026-33320.patch
+
+  - uses: go/build
+    with:
+      modroot: .
+      packages: ./cmd/dasel
+      output: dasel
+      ldflags: -s -w -X github.com/tomwright/dasel/v3/internal.Version=v${{package.version}}
+
+  - runs: |
+      install -Dm755 dasel "${{targets.destdir}}/usr/bin/dasel"
+
+test:
+  pipeline:
+    - runs: |
+        dasel --version | grep -q "v${{package.version}}"
