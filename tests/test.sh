@@ -18,6 +18,16 @@ result=$(echo '{"test": "value"}' | docker run --rm $HARDENED -i "$IMAGE" -i jso
 echo "Testing JSON to YAML conversion..."
 echo '{"key": "value"}' | docker run --rm $HARDENED -i "$IMAGE" -i json -o yaml --root | grep -q "key: value"
 
+echo "Testing legitimate YAML aliases still resolve..."
+legit_yaml='defaults: &defaults
+  timeout: 30
+  retries: 3
+production:
+  <<: *defaults
+  host: prod.example.com'
+result=$(echo "$legit_yaml" | docker run --rm $HARDENED -i "$IMAGE" -i yaml 'production.timeout')
+[ "$result" = "30" ]
+
 echo "Testing CVE-2026-33320 patch (bounded alias expansion)..."
 malicious_yaml='a: &a ["lol","lol","lol","lol","lol","lol","lol","lol","lol"]
 b: &b [*a,*a,*a,*a,*a,*a,*a,*a,*a]

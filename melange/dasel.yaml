@@ -49,3 +49,5 @@ test:
   pipeline:
     - runs: |
         dasel version | grep -q "v${{package.version}}"
+        echo '{"name":"dasel","version":3}' | dasel -i json 'name' | grep -q "dasel"
+        echo '{"items":[1,2,3]}' | dasel -i json 'items.[1]' | grep -q "2"
