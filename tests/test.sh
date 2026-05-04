@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-IMAGE="dasel:latest-amd64"
+IMAGE="dasel:3.3.1-amd64"
 HARDENED="--read-only --cap-drop=ALL --security-opt=no-new-privileges"
 
 echo "Loading OCI image..."

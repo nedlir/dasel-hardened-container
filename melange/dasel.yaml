@@ -36,6 +36,16 @@ pipeline:
       ldflags: -s -w -X github.com/tomwright/dasel/v3/internal.Version=v${{package.version}}
 
 test:
+  environment:
+    contents:
+      repositories:
+        - /work/packages
+        - https://packages.wolfi.dev/os
+      keyring:
+        - /work/keys/melange.rsa.pub
+        - https://packages.wolfi.dev/os/wolfi-signing.rsa.pub
+      packages:
+        - busybox
   pipeline:
     - runs: |
-        dasel --version | grep -q "v${{package.version}}"
+        dasel version | grep -q "v${{package.version}}"
