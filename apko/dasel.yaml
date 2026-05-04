@@ -1,0 +1,16 @@
+contents:
+  keyring:
+    - keys/melange.rsa.pub
+    - https://packages.wolfi.dev/os/wolfi-signing.rsa.pub
+  repositories:
+    - ./packages
+    - https://packages.wolfi.dev/os
+  packages:
+    - dasel
+    - ca-certificates-bundle
+
+archs:
+  - x86_64
+
+entrypoint:
+  command: /usr/bin/dasel
