@@ -1,5 +1,11 @@
+# don't upload keys
 *.rsa
 *.rsa.pub
+
+# don't upload build artifacts
 *.tar
 *tar.gz
 *.apk
+
+# don't upload SBOMs
+*.spdx.json
