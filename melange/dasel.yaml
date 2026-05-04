@@ -8,6 +8,10 @@ package:
 
 environment:
   contents:
+    repositories:
+      - https://packages.wolfi.dev/os
+    keyring:
+      - https://packages.wolfi.dev/os/wolfi-signing.rsa.pub
     packages:
       - busybox
       - ca-certificates-bundle
@@ -22,8 +26,7 @@ pipeline:
 
   - uses: patch
     with:
-      patches:
-        - CVE-2026-33320.patch
+      patches: CVE-2026-33320.patch
 
   - uses: go/build
     with:
@@ -31,9 +34,6 @@ pipeline:
       packages: ./cmd/dasel
       output: dasel
       ldflags: -s -w -X github.com/tomwright/dasel/v3/internal.Version=v${{package.version}}
-
-  - runs: |
-      install -Dm755 dasel "${{targets.destdir}}/usr/bin/dasel"
 
 test:
   pipeline:
