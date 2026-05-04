@@ -1,13 +1,13 @@
 services:
   melange:
-    image: cgr.dev/chainguard/melange:latest
+    image: cgr.dev/chainguard/melange@sha256:b6f11bb45a6090c182986028fd2249fb1a18dcb6e173c4ce001dd3fb4cb1dd71
     privileged: true
     working_dir: /work
     volumes:
       - .:/work
 
   apko:
-    image: cgr.dev/chainguard/apko:latest
+    image: cgr.dev/chainguard/apko@sha256:20dfc1f5e3461b5eaf3279f762cd4bf86c7f3635d2a9642f905cf583525f9ee6
     working_dir: /work
     volumes:
       - .:/work
