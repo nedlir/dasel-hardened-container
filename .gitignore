@@ -1,3 +1,5 @@
-keys/
-packages/
-dasel.tar
+*.rsa
+*.rsa.pub
+*.tar
+*tar.gz
+*.apk
