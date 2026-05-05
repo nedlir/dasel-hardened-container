@@ -61,9 +61,25 @@ docker compose run --rm apko build apko/dasel.yaml dasel:3.3.1 dasel.tar --arch 
 
 Step 2 automatically generates and signs `packages/x86_64/APKINDEX.tar.gz`.
 
-## Test
+## Run
 
-**Package tests** run automatically during `melange build` (step 2 above). To run them in isolation:
+After loading the image, run dasel:
+
+```bash
+docker load --input dasel.tar
+
+# Example: query a JSON file
+echo '{"name": "dasel"}' | docker run --rm \
+  --read-only \
+  --cap-drop=ALL \
+  --security-opt=no-new-privileges \
+  -i dasel:3.3.1-amd64 \
+  -i json 'name'
+```
+
+These flags enforce the runtime layer of the defense-in-depth strategy described in [Image Hardening](#image-hardening): an immutable root filesystem, zero Linux capabilities, and no privilege escalation paths.
+
+## Test
 
 ```bash
 docker compose run --rm melange test melange/dasel.yaml --arch x86_64
@@ -108,8 +124,6 @@ The image applies defense-in-depth beyond minimal packaging:
 | Runtime | `--read-only`                      | Immutable root filesystem                           |
 | Runtime | `--cap-drop=ALL`                   | Zero Linux capabilities                             |
 | Runtime | `--no-new-privileges`              | Prevents privilege escalation via setuid/setgid     |
-
-The test script runs all assertions under these runtime restrictions to prove the image works fully hardened.
 
 ## Vulnerability Scanning
 
