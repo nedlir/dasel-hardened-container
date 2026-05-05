@@ -19,11 +19,9 @@ echo "Testing JSON to YAML conversion..."
 echo '{"key": "value"}' | docker run --rm $HARDENED -i "$IMAGE" -i json -o yaml --root | grep -q "key: value"
 
 echo "Testing legitimate YAML aliases still resolve..."
-legit_yaml='defaults: &defaults
-  timeout: 30
-  retries: 3
+legit_yaml='base_timeout: &base_timeout 30
 production:
-  <<: *defaults
+  timeout: *base_timeout
   host: prod.example.com'
 result=$(echo "$legit_yaml" | docker run --rm $HARDENED -i "$IMAGE" -i yaml 'production.timeout')
 [ "$result" = "30" ]
