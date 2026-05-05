@@ -13,6 +13,14 @@ This is a melange package and apko container image for [dasel v3.3.1](https://gi
 - Architecture: **x86_64** only
 - Internet access required for initial build (fetches source tarball, Go modules, Wolfi packages)
 
+### Windows requirements
+
+All build and load commands work from any terminal (PowerShell, CMD, or bash). One step still requires a Unix shell:
+
+- `bash tests/test.sh` — the test script uses bash and coreutils (`timeout`, `grep`, `sed`)
+
+Install **Git Bash** (ships with [Git for Windows](https://git-scm.com/download/win)) before running the image tests.
+
 ## Project Structure
 
 ```
@@ -64,10 +72,10 @@ docker compose run --rm melange test melange/dasel.yaml --arch x86_64
 **Image tests:**
 
 ```bash
-# Load the image
-docker load < dasel.tar
+# Load the image (works from PowerShell, CMD, or bash)
+docker load --input dasel.tar
 
-# Run the test script
+# Run the test script (requires Git Bash on Windows)
 bash tests/test.sh
 ```
 
@@ -126,8 +134,8 @@ The SBOM that I generated what inspected with Grype with no other vulnerabilitie
 - **x86_64 only** - single-arch build. Multi-arch would require additional `--arch` flags
 - **Throwaway signing keys** - generated locally and gitignored. In a production setup, private signing keys should be stored in a secrets manager, not on the local filesystem. even if gitignored files can be exposed through backup tools, container volume mounts, or a compromised workstation.
 - **Wolfi OS dependency** - the build and final image depend on Wolfi packages (`busybox`, `go`, `ca-certificates-bundle`). If a vulnerability is discovered in any of those upstream packages, it would affect this image as well. Keeping Wolfi packages up to date or subscribing to their security advisories would be necessary in production
-- **Docker Compose wrappers** - melange and apko run as Docker containers via `compose.yaml`. This was developed on Kali 2025.3, but was later on adjusted to be agnostic to macOS/Windows
-- **Test script requires bash and Docker** - `tests/test.sh` uses `timeout` (coreutils) and Docker CLI. On Windows, run from Git Bash or WSL
+- **Docker Compose wrappers** - melange and apko run as Docker containers via `compose.yaml`. This was developed on Kali 2025.3 and verified on Windows 10 with Docker Desktop 29.3.1
+- **Test script requires bash** - `tests/test.sh` uses `timeout` (coreutils) and Docker CLI. All other commands are pure `docker` and work from PowerShell or CMD. On Windows, run the test script from Git Bash (see [Windows requirements](#windows-requirements))
 
 ### SBOM Coverage Gap
 
@@ -137,15 +145,16 @@ For prod environment there should be some automation of the SBOM extraction that
 
 ### Commands run and results
 
-| Command                                                                                                    | Result                                                                     |
-| ---------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
-| `docker compose run --rm melange keygen keys/melange.rsa`                                                  | Passed                                                                     |
-| `docker compose run --rm melange build melange/dasel.yaml --arch x86_64 --signing-key keys/melange.rsa`    | Passed - patch applied (7/7 hunks), APK produced                           |
-| `docker compose run --rm apko build apko/dasel.yaml dasel:3.3.1 dasel.tar --arch x86_64 --sbom-path sbom/` | Passed - 3 packages installed, OCI tarball produced                        |
-| `docker load < dasel.tar`                                                                                  | Passed - `dasel:3.3.1-amd64` loaded                                        |
-| `bash tests/test.sh`                                                                                       | Passed - all tests (version, key extraction, format conversion, CVE patch) |
-| `docker run --rm -v ... anchore/grype:latest /work/dasel.tar`                                              | Passed - 1 finding (expected false positive for the patched CVE)           |
-| `docker run --rm -v ... anchore/syft:latest /work/dasel.tar`                                               | Passed - 36 packages cataloged (3 APK + 32 Go + 1 stdlib)                  |
+| Command                                                                                                    | Result                                                                                   |
+| ---------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| `docker compose run --rm melange keygen keys/melange.rsa`                                                  | Passed                                                                                   |
+| `docker compose run --rm melange build melange/dasel.yaml --arch x86_64 --signing-key keys/melange.rsa`    | Passed - patch applied (7/7 hunks), APK produced                                         |
+| `docker compose run --rm melange test melange/dasel.yaml --arch x86_64`                                    | Passed - version, JSON key extraction, JSON array access                                 |
+| `docker compose run --rm apko build apko/dasel.yaml dasel:3.3.1 dasel.tar --arch x86_64 --sbom-path sbom/` | Passed - 3 packages installed, OCI tarball produced                                      |
+| `docker load --input dasel.tar`                                                                            | Passed - `dasel:3.3.1-amd64` loaded                                                      |
+| `bash tests/test.sh`                                                                                       | Passed - all tests (version, key extraction, format conversion, YAML aliases, CVE patch) |
+| `docker run --rm -v ... anchore/grype:latest /work/dasel.tar`                                              | Passed - 1 finding (expected false positive for the patched CVE)                         |
+| `docker run --rm -v ... anchore/syft:latest /work/dasel.tar`                                               | Passed - 36 packages cataloged (3 APK + 32 Go + 1 stdlib)                                |
 
 ### Future improvements
 
