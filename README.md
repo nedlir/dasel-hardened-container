@@ -25,6 +25,7 @@ Install **Git Bash** (ships with [Git for Windows](https://git-scm.com/download/
 
 ```
 .
+├── .github/
 ├── melange/
 │   ├── dasel.yaml
 │   └── CVE-2026-33320.patch
@@ -32,6 +33,7 @@ Install **Git Bash** (ships with [Git for Windows](https://git-scm.com/download/
 │   └── dasel.yaml
 ├── tests/
 │   └── test.sh
+├── Makefile
 ├── compose.yaml
 ├── keys/                       # Generated, gitignored
 │   ├── melange.rsa
@@ -47,6 +49,18 @@ Install **Git Bash** (ships with [Git for Windows](https://git-scm.com/download/
 ```
 
 ## Build
+
+### Using Make
+
+```bash
+make build        # keygen (if needed) + package + image
+make test         # package tests + image tests
+make all          # build + test
+make clean        # remove all generated artifacts
+make help         # list all targets and variables
+```
+
+### Manual commands
 
 ```bash
 # 1. Generate signing keys (one-time)
@@ -81,17 +95,22 @@ These flags enforce the runtime layer of the defense-in-depth strategy described
 
 ## Test
 
+### Using Make
+
 ```bash
-docker compose run --rm melange test melange/dasel.yaml --arch x86_64
+make test          # all tests (package + image)
+make package-test  # melange package tests only
+make image-test    # image tests only (requires bash)
 ```
 
-**Image tests:**
+### Manual commands
 
 ```bash
-# Load the image (works from PowerShell, CMD, or bash)
-docker load --input dasel.tar
+# Package tests
+docker compose run --rm melange test melange/dasel.yaml --arch x86_64
 
-# Run the test script (requires Git Bash on Windows)
+# Image tests (requires Git Bash on Windows)
+docker load --input dasel.tar
 bash tests/test.sh
 ```
 
